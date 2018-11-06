@@ -1,11 +1,16 @@
 const express = require('express');
-const helmet = require('helmet');
+
+const configureMiddleware = require('./config/middleware.js')
+const userRoutes = require('./users/userRoutes.js')
+const postRoutes = require('./posts/postRoutes.js')
+const friendRoutes = require('./friends/friendRoutes.js')
 
 const server = express();
 
-// middleware - order matters
-server.use(helmet());
-server.use(express.json());
+// middleware - order matters --- moved them to middleware.js
+// server.use(helmet());
+// server.use(express.json());
+configureMiddleware(server);
 
 
 function validate (req, res, next) {
@@ -16,14 +21,20 @@ function validate (req, res, next) {
             next('u12')
         }
 }
+
+server.use('/users', userRoutes);
+server.use('/posts', postRoutes);
+server.use('/friends', friendRoutes);
+
+
 // route handlers are middleware
-server.post('/hello', validate, (req,res, next) => {
+server.post('/hello', (req,res, next) => {
     const name = req.body;
     res.status(200).json({ hello: req.body.name});
 })
 
 // Error handler
-server.use(errorHandler) // key
+server.use(errorHandler) //key
 
 function errorHandler(err, req, res, next) {
     console.log('handling error');
@@ -55,49 +66,4 @@ function errorHandler(err, req, res, next) {
 
 const port = process.env.PORT || 8290
 //start server
-server.listen(port, () => console.log(`\n== API running on http://localhost:${port} ==\n`))
-
-// types of middleware:
-// - build in
-// - third party
-// - custom 
-// - error handling (err, req, res, next) => {}
-
-// homies
-// duo > trio > quartet
-
-// Application Mode
-// Way to move regular mode to error mode
-// - Error
-// - Regular
-
-// RULES: 
-// [rm1] =next(new Error(something)> [rm2] =next()> [em1] =next()> [em2] => [rmn]
-
-// calling next() moves to the next regular middleware
-// calling next(arg) moves to the error regular middleware
-
-// .then and .catch(err=> next(err))
-// err = {
-//     u12: {
-//         httpCode: 422,
-//         message: 'Name must be specified'
-//     }
-// }
-
-// all middleware
-
-// all the route handlers
-
-// server.use(errorHandler)
-
-// function errorHandler(err, req, res, next) {
-// const code = err.code;
-// // const response = { message: error} -- can have axios error 
-// const error = errors[code] // get from file/fs/db
-// res.status(err.httpCode).json(error)
-// }
-
-// next('u12')
-
-// *************************** NEVER TRUST THE CLIENT *************************** 
+server.listen(port, () => console.log(`\n== API running on http://localhost:${port} ==\n`));
