@@ -22,7 +22,7 @@ function validate (req, res, next) {
         }
 }
 
-server.use('/users', userRoutes);
+server.use('/users', userRoutes); // mount
 server.use('/posts', postRoutes);
 server.use('/friends', friendRoutes);
 
